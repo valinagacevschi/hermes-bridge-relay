@@ -245,4 +245,4 @@ The Docker image runs HTTP by default. Run the compiled WebSocket and push-worke
 
 ## License
 
-No license has been granted for this repository. All rights are reserved unless the repository owner adds an explicit license. Public visibility does not grant permission to reuse or redistribute this code.
+This repository is licensed under the MIT License. See [LICENSE](LICENSE).
