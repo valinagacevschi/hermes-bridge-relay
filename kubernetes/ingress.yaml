@@ -1,0 +1,58 @@
+# Generated from expo-hermes; edit the private source, not this mirror.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: relay
+  namespace: hermes-bridge
+  annotations:
+    # WebSocket support — keep connections alive for the WS path
+    nginx.ingress.kubernetes.io/proxy-read-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-send-timeout: "3600"
+    nginx.ingress.kubernetes.io/proxy-buffering: "off"
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      postpone_output 0;
+    # Raw SSE location injected at server{} level — bypasses body_filter_by_lua_block
+    # that nginx-ingress 0.30.0 adds to every generated location block.
+    nginx.ingress.kubernetes.io/server-snippet: |
+      location ^~ /api/relay/stream/ {
+        proxy_pass http://relay.hermes-bridge.svc.cluster.local:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 3600s;
+        proxy_send_timeout 3600s;
+        gzip off;
+        postpone_output 0;
+      }
+    nginx.ingress.kubernetes.io/websocket-services: "relay"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+      - ${RELAY_HOST}
+      secretName: relay-tls
+  rules:
+    - host: ${RELAY_HOST}
+      http:
+        paths:
+          # WebSocket relay — must come before the catch-all
+          - path: /ws/
+            pathType: Prefix
+            backend:
+              service:
+                name: relay
+                port:
+                  number: 8082
+          # Everything else → Expo Router API + web
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: relay
+                port:
+                  number: 3000

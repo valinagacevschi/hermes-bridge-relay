@@ -1,0 +1,40 @@
+{
+  "name": "hermes-bridge-relay",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Standalone Hermes Bridge relay HTTP, WebSocket, and push worker",
+  "main": "expo-router/entry",
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit",
+    "build": "expo export --platform web",
+    "build:runtime": "esbuild server/http.ts server/ws.ts db/migrate.ts --platform=node --format=esm --out-extension:.js=.mjs --outdir=.relay-build && esbuild server/push.ts --bundle --packages=external --platform=node --format=esm --outfile=.relay-build/server/push.mjs",
+    "start:http": "node .relay-build/server/http.mjs",
+    "start:ws": "node .relay-build/server/ws.mjs",
+    "start:push": "node .relay-build/server/push.mjs",
+    "db:migrate": "node .relay-build/db/migrate.mjs"
+  },
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "expo": "58.0.0",
+    "expo-constants": "~58.0.9",
+    "expo-linking": "~58.0.10",
+    "expo-router": "~58.0.12",
+    "ioredis": "^5.4.1",
+    "pg": "^8.13.3",
+    "react": "19.3.0",
+    "react-dom": "19.3.0",
+    "react-native": "0.88.0-rc.3",
+    "react-native-safe-area-context": "~5.9.1",
+    "react-native-web": "0.21.2",
+    "ws": "^8.18.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/pg": "^8.11.10",
+    "@types/ws": "^8.18.1",
+    "esbuild": "^0.25.0",
+    "typescript": "~6.0.3",
+    "vitest": "^3.1.4"
+  }
+}

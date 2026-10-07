@@ -1,0 +1,9 @@
+{
+  "expo": {
+    "name": "Hermes Bridge Relay",
+    "slug": "hermes-bridge-relay",
+    "version": "0.1.0",
+    "web": { "output": "server" },
+    "plugins": ["expo-router"]
+  }
+}

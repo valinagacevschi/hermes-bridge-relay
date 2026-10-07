@@ -1,0 +1,115 @@
+# Generated from expo-hermes; edit the private source, not this mirror.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relay
+  namespace: hermes-bridge
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: relay
+  template:
+    metadata:
+      labels:
+        app: relay
+    spec:
+      imagePullSecrets:
+        - name: docker-xelasys
+
+      initContainers:
+        - name: migrate
+          image: ${IMAGE}
+          command: ["node", "db/migrate.mjs"]
+          envFrom:
+            - configMapRef:
+                name: relay-config
+            - secretRef:
+                name: relay-secrets
+
+      containers:
+        - name: relay-http
+          image: ${IMAGE}
+          command: ["node", "server/http.mjs"]
+          ports:
+            - containerPort: 3000
+          envFrom:
+            - configMapRef:
+                name: relay-config
+            - secretRef:
+                name: relay-secrets
+          readinessProbe:
+            httpGet:
+              path: /api/health
+              port: 3000
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /api/live
+              port: 3000
+            initialDelaySeconds: 20
+            periodSeconds: 30
+
+        - name: relay-ws
+          image: ${IMAGE}
+          command: ["node", "server/ws.mjs"]
+          ports:
+            - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: relay-config
+            - secretRef:
+                name: relay-secrets
+          livenessProbe:
+            tcpSocket:
+              port: 8082
+            initialDelaySeconds: 10
+            periodSeconds: 30
+---
+# Push-notification worker. SEPARATE deployment at replicas: 1 (NOT a relay
+# sidecar) because push.ts uses Redis psubscribe — a fan-out consumer. Running
+# it in the 2-replica relay pod would deliver every notification TWICE.
+# Stateless, no inbound ports; just Redis -> Expo Push API.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: relay-push
+  namespace: hermes-bridge
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: relay-push
+  template:
+    metadata:
+      labels:
+        app: relay-push
+    spec:
+      imagePullSecrets:
+        - name: docker-xelasys
+
+      # Same initContainer as `relay` — without it, relay-push can start (and
+      # run its first prunePendingMessages()) before relay's own migrate
+      # initContainer finishes creating a new table on a rollout where both
+      # deployments come up in parallel. Idempotent (CREATE TABLE IF NOT
+      # EXISTS), so running it twice concurrently is safe.
+      initContainers:
+        - name: migrate
+          image: ${IMAGE}
+          command: ["node", "db/migrate.mjs"]
+          envFrom:
+            - configMapRef:
+                name: relay-config
+            - secretRef:
+                name: relay-secrets
+
+      containers:
+        - name: relay-push
+          image: ${IMAGE}
+          command: ["node", "server/push.mjs"]
+          envFrom:
+            - configMapRef:
+                name: relay-config
+            - secretRef:
+                name: relay-secrets

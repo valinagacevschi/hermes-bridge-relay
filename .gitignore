@@ -1,0 +1,11 @@
+# Generated from expo-hermes; edit the private source, not this mirror.
+node_modules/
+dist/
+.relay-build/
+.expo/
+.env
+.env.*
+coverage/
+*.log
+.DS_Store
+expo-env.d.ts

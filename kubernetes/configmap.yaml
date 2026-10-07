@@ -1,0 +1,10 @@
+# Generated from expo-hermes; edit the private source, not this mirror.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: relay-config
+  namespace: hermes-bridge
+data:
+  PUBLIC_URL: "https://${RELAY_HOST}"
+  RELAY_WS_PORT: "8082"
+  PORT: "3000"

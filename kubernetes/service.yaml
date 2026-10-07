@@ -1,0 +1,16 @@
+# Generated from expo-hermes; edit the private source, not this mirror.
+apiVersion: v1
+kind: Service
+metadata:
+  name: relay
+  namespace: hermes-bridge
+spec:
+  selector:
+    app: relay
+  ports:
+    - name: http
+      port: 3000
+      targetPort: 3000
+    - name: ws
+      port: 8082
+      targetPort: 8082

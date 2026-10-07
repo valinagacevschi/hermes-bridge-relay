@@ -1,0 +1,5 @@
+# Generated from expo-hermes; edit the private source, not this mirror.
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: hermes-bridge
