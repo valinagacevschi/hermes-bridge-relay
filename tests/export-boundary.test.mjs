@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 
 function filesUnder(dir) {
   return readdirSync(dir)
-    .filter((name) => ![".git", "node_modules", "dist", ".expo", ".relay-build"].includes(name))
+    .filter((name) => ![".git", "node_modules", "dist", ".expo", "coverage"].includes(name))
     .flatMap((name) => {
     const path = join(dir, name);
     return statSync(path).isDirectory() ? filesUnder(path) : [path];
