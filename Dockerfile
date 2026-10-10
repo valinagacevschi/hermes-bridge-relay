@@ -16,19 +16,8 @@ COPY . .
 ENV CI=1
 RUN npx expo export --platform web
 
-# Compile server + migration TypeScript to plain CJS JS (no AVX required at runtime).
-# Transpile-only (no --bundle): import specifiers survive verbatim, so these
-# files may import node builtins and node_modules but NOT anything from lib/ --
-# the runtime stage below copies no lib/, and Node ESM would need an explicit
-# .mjs extension anyway.
-RUN npx esbuild server/http.ts server/ws.ts db/migrate.ts --platform=node --format=esm --out-extension:.js=.mjs --outdir=.
-
-# push.ts is bundled instead, because it imports lib/push-receipts.ts (the pure
-# receipt-reconciliation logic, kept in lib/ so vitest can cover it -- see #65).
-# --packages=external keeps node_modules resolved at runtime exactly as the
-# transpile-only outputs do; only the local import is inlined. Bundling just
-# this one entrypoint leaves the others' build shape untouched.
-RUN npx esbuild server/push.ts --bundle --packages=external --platform=node --format=esm --outfile=server/push.mjs
+# Build the server entrypoints with the shared production recipe.
+RUN npm run build:server
 
 # ---- runtime ----
 FROM node:20-alpine

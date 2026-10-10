@@ -1,7 +1,8 @@
 # Generated from expo-hermes; edit the private source, not this mirror.
 node_modules/
 dist/
-.relay-build/
+server/*.mjs
+db/*.mjs
 .expo/
 .env
 .env.*

@@ -5,6 +5,7 @@ import { config } from "dotenv";
 import Redis from "ioredis";
 import { Pool } from "pg";
 import { type WebSocket, WebSocketServer } from "ws";
+import { createHeartbeatMonitor, createLastSeenTracker } from "@/lib/relay-presence";
 
 config({ override: true });
 
@@ -134,6 +135,9 @@ async function handleConnection(ws: WebSocket, req: IncomingMessage) {
   });
   console.log(`[ws] ${role} connected: ${profile_id}`);
 
+  const lastSeen = role === "gateway" ? createLastSeenTracker(pub, profile_id) : null;
+  if (lastSeen) void lastSeen.connect();
+
   // Handshake — gateway only (see DESCRIPTOR comment above).
   if (role === "gateway") {
     ws.send(JSON.stringify(DESCRIPTOR));
@@ -171,7 +175,16 @@ async function handleConnection(ws: WebSocket, req: IncomingMessage) {
   // the mobile RN WebSocket does not — without this, the :out socket drops on
   // idle and the app's connection flaps to "offline". 25s < typical 30-60s idle
   // windows.
+  const heartbeatMonitor = role === "gateway" ? createHeartbeatMonitor(ws) : null;
+  ws.on("pong", () => {
+    heartbeatMonitor?.pong();
+    if (lastSeen) void lastSeen.pong();
+  });
   const heartbeat = setInterval(() => {
+    if (heartbeatMonitor) {
+      heartbeatMonitor.tick();
+      return;
+    }
     try {
       ws.ping();
     } catch {
@@ -209,6 +222,7 @@ async function handleConnection(ws: WebSocket, req: IncomingMessage) {
   ws.on("close", () => {
     clearInterval(heartbeat);
     sub.quit();
+    if (lastSeen) void lastSeen.close();
     console.log(`[ws] ${role} disconnected: ${profile_id}`);
   });
 }
