@@ -39,6 +39,9 @@ export async function POST(request: Request): Promise<Response> {
   const authErr = await requireApiKey(request, profile_id);
   if (authErr) return authErr;
 
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) return Response.json({ error: "service_unavailable" }, { status: 503 });
+
   // Durable phone->gateway queue (#41) — RPC excluded: a synchronous caller
   // that already timed out waiting for a reply gains nothing from a later
   // durable redelivery. Insert unconditionally (mirrors enqueue+api.ts's
@@ -83,7 +86,7 @@ export async function POST(request: Request): Promise<Response> {
   // lossy/flaky receive stream — a response can no longer be dropped in a
   // reconnect gap.
   if (role === "rpc.request" && rpc_id) {
-    const sub = new Redis(process.env.REDIS_URL!);
+    const sub = new Redis(redisUrl);
     // See server/http.ts — an unhandled ioredis "error" event crashes the process.
     sub.on("error", (err) => console.error("[relay-message] redis error:", err));
     try {

@@ -7,8 +7,8 @@ function filesUnder(dir) {
   return readdirSync(dir)
     .filter((name) => ![".git", "node_modules", "dist", ".expo", "coverage"].includes(name))
     .flatMap((name) => {
-    const path = join(dir, name);
-    return statSync(path).isDirectory() ? filesUnder(path) : [path];
+      const path = join(dir, name);
+      return statSync(path).isDirectory() ? filesUnder(path) : [path];
     });
 }
 
@@ -25,7 +25,11 @@ describe("public distribution boundary", () => {
     const actual = filesUnder(".")
       .filter((path) => path !== "./expo-env.d.ts")
       .map((path) => path.replace(/^\.\//, ""));
-    expect(actual.some((path) => /(^|\/)(components|assets|PRD_[^/]*|\.env(?:\.|$))/.test(path))).toBe(false);
-    expect(actual.some((path) => /(^|\/)(secret\.ya?ml|CLAUDE\.md|CONTEXT\.md)$/.test(path))).toBe(false);
+    expect(
+      actual.some((path) => /(^|\/)(components|assets|PRD_[^/]*|\.env(?:\.|$))/.test(path))
+    ).toBe(false);
+    expect(actual.some((path) => /(^|\/)(secret\.ya?ml|CLAUDE\.md|CONTEXT\.md)$/.test(path))).toBe(
+      false
+    );
   });
 });

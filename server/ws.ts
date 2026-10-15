@@ -1,11 +1,11 @@
 // Generated from expo-hermes; edit the private source, not this mirror.
-import { createServer } from "http";
-import type { IncomingMessage } from "http";
+import { createServer } from "node:http";
+import type { IncomingMessage } from "node:http";
+import { createHeartbeatMonitor, createLastSeenTracker } from "@/lib/relay-presence";
 import { config } from "dotenv";
 import Redis from "ioredis";
 import { Pool } from "pg";
 import { type WebSocket, WebSocketServer } from "ws";
-import { createHeartbeatMonitor, createLastSeenTracker } from "@/lib/relay-presence";
 
 config({ override: true });
 
@@ -13,7 +13,12 @@ config({ override: true });
 process.on("uncaughtException", (err) => console.error("[relay-ws] uncaught exception:", err));
 process.on("unhandledRejection", (err) => console.error("[relay-ws] unhandled rejection:", err));
 
-const REDIS_URL = process.env.REDIS_URL!;
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+const REDIS_URL = requiredEnv("REDIS_URL");
 const PORT = Number(process.env.RELAY_WS_PORT ?? 8082);
 
 // Capability handshake sent to the gateway adapter right after connect. Plaintext
@@ -76,7 +81,7 @@ const DESCRIPTOR: CapabilityDescriptor = {
 // further today (non-goal — see docs/architecture.md).
 const REPLAY_PAGE_LIMIT = 500;
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 // See lib/db.ts — an unhandled pg.Pool "error" event is fatal to the process.
 pool.on("error", (err) => console.error("[relay-ws] pg pool error:", err));
 const pub = new Redis(REDIS_URL);
@@ -88,7 +93,7 @@ const wss = new WebSocketServer({ server: httpServer });
 wss.on("error", (err) => console.error("[relay-ws] websocket server error:", err));
 
 async function handleConnection(ws: WebSocket, req: IncomingMessage) {
-  const url = new URL(req.url!, "http://localhost");
+  const url = new URL(req.url ?? "/", "http://localhost");
   const m = url.pathname.match(/^\/ws\/hermes\/([^/]+)$/);
   if (!m) {
     ws.close(1008, "Not Found");

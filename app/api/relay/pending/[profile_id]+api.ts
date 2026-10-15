@@ -17,7 +17,8 @@ config({ override: true });
 export async function GET(request: Request): Promise<Response> {
   // Server-rendered dynamic routes don't reliably get `params` — extract from
   // the URL directly (see docs/GOTCHAS.md).
-  const profile_id = new URL(request.url).pathname.split("/").at(-1)!;
+  const pathname = new URL(request.url).pathname;
+  const profile_id = pathname.substring(pathname.lastIndexOf("/") + 1);
 
   const authErr = await requireApiKey(request, profile_id);
   if (authErr) return authErr;

@@ -1,5 +1,5 @@
 // Generated from expo-hermes; edit the private source, not this mirror.
-import { createHash, randomBytes } from "crypto";
+import { createHash, randomBytes } from "node:crypto";
 
 const WORDS = [
   "KITE",
@@ -48,11 +48,11 @@ export function hashToken(token: string): string {
 }
 
 export function apiKey(): string {
-  return "hb_" + randomBytes(32).toString("hex");
+  return `hb_${randomBytes(32).toString("hex")}`;
 }
 
 export function inviteId(): string {
-  return "inv_" + randomBytes(8).toString("hex");
+  return `inv_${randomBytes(8).toString("hex")}`;
 }
 
 // Pairing token used by both the QR flow and manual entry. Keep this in the
