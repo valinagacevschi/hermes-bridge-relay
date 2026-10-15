@@ -4,8 +4,8 @@ import { createHmac } from "node:crypto";
 import { describe, expect, it } from "vitest";
 
 import {
-  categoryFor,
   EVENT_MAX_SKEW_MS,
+  categoryFor,
   isFreshTimestamp,
   sanitizeEventData,
   templateFor,

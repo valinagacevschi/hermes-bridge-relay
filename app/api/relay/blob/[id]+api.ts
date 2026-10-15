@@ -16,7 +16,9 @@ import db from "@/lib/db";
 export async function GET(request: Request): Promise<Response> {
   // Server-rendered dynamic routes don't reliably get `params` — extract from
   // the URL directly (see docs/GOTCHAS.md).
-  const blob_id = new URL(request.url).pathname.split("/").at(-1)!;
+  const blob_id = new URL(request.url).pathname.substring(
+    new URL(request.url).pathname.lastIndexOf("/") + 1
+  );
 
   const { rows } = await db.query<{ profile_id: string; mime: string; sealed_blob: Buffer }>(
     "SELECT profile_id, mime, sealed_blob FROM blobs WHERE blob_id = $1",

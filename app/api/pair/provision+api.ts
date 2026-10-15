@@ -53,8 +53,8 @@ export async function POST(request: Request): Promise<Response> {
       // Fresh provision: a self_serve Laptop + its api_key, minted directly
       // (not via the invite/claim flow). The `profile_ss_` id prefix is load
       // bearing — schema.sql's self_serve backfill keys off it.
-      pid = "profile_ss_" + randomUUID().replace(/-/g, "").slice(0, 8);
-      await client.query(`INSERT INTO profiles (id, name, self_serve) VALUES ($1, $2, TRUE)`, [
+      pid = `profile_ss_${randomUUID().replace(/-/g, "").slice(0, 8)}`;
+      await client.query("INSERT INTO profiles (id, name, self_serve) VALUES ($1, $2, TRUE)", [
         pid,
         "Self-serve",
       ]);

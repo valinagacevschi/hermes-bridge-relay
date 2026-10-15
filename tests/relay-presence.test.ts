@@ -2,9 +2,9 @@
 import { describe, expect, it, vi } from "vitest";
 
 import {
+  LAST_SEEN_TTL_SECONDS,
   createHeartbeatMonitor,
   createLastSeenTracker,
-  LAST_SEEN_TTL_SECONDS,
   writeLastSeen,
 } from "@/lib/relay-presence";
 
@@ -34,10 +34,34 @@ describe("relay presence helpers", () => {
     await tracker.pong();
     await tracker.close();
     expect(set).toHaveBeenCalledTimes(4);
-    expect(set).toHaveBeenNthCalledWith(1, "hermes:p1:last_seen", "2026-10-07T09:42:00.000Z", "EX", 2592000);
-    expect(set).toHaveBeenNthCalledWith(2, "hermes:p1:last_seen", "2026-10-07T09:43:00.000Z", "EX", 2592000);
-    expect(set).toHaveBeenNthCalledWith(3, "hermes:p1:last_seen", "2026-10-07T09:44:00.000Z", "EX", 2592000);
-    expect(set).toHaveBeenNthCalledWith(4, "hermes:p1:last_seen", "2026-10-07T09:44:00.000Z", "EX", 2592000);
+    expect(set).toHaveBeenNthCalledWith(
+      1,
+      "hermes:p1:last_seen",
+      "2026-10-07T09:42:00.000Z",
+      "EX",
+      2592000
+    );
+    expect(set).toHaveBeenNthCalledWith(
+      2,
+      "hermes:p1:last_seen",
+      "2026-10-07T09:43:00.000Z",
+      "EX",
+      2592000
+    );
+    expect(set).toHaveBeenNthCalledWith(
+      3,
+      "hermes:p1:last_seen",
+      "2026-10-07T09:44:00.000Z",
+      "EX",
+      2592000
+    );
+    expect(set).toHaveBeenNthCalledWith(
+      4,
+      "hermes:p1:last_seen",
+      "2026-10-07T09:44:00.000Z",
+      "EX",
+      2592000
+    );
   });
 
   it("swallows Redis write failures and keeps pong throttling active", async () => {

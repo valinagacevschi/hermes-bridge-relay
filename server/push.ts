@@ -33,6 +33,12 @@ import { raiseFloor } from "@/lib/relay-queue";
 
 config({ override: true });
 
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+
 // Last-resort backstop — see server/http.ts for the reasoning.
 process.on("uncaughtException", (err) => console.error("[push] uncaught exception:", err));
 process.on("unhandledRejection", (err) => console.error("[push] unhandled rejection:", err));
@@ -40,10 +46,10 @@ process.on("unhandledRejection", (err) => console.error("[push] unhandled reject
 const EXPO_PUSH_URL = "https://exp.host/--/api/v2/push/send";
 const EXPO_RECEIPTS_URL = "https://exp.host/--/api/v2/push/getReceipts";
 
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 // See lib/db.ts — an unhandled pg.Pool "error" event is fatal to the process.
 pool.on("error", (err) => console.error("[push] pg pool error:", err));
-const sub = new Redis(process.env.REDIS_URL!);
+const sub = new Redis(requiredEnv("REDIS_URL"));
 
 type NotifyPayload = {
   profile_id: string;

@@ -32,12 +32,12 @@ export async function POST(request: Request): Promise<Response> {
          VALUES ($1, $2)
          ON CONFLICT (id) DO UPDATE SET name = EXCLUDED.name
          RETURNING id`,
-        ["profile_" + name.toLowerCase().replace(/\s+/g, "_"), name]
+        [`profile_${name.toLowerCase().replace(/\s+/g, "_")}`, name]
       );
       pid = pResult.rows[0].id;
     }
 
-    const profileRow = await client.query<{ id: string }>(`SELECT id FROM profiles WHERE id = $1`, [
+    const profileRow = await client.query<{ id: string }>("SELECT id FROM profiles WHERE id = $1", [
       pid,
     ]);
     if (!profileRow.rows[0]) {

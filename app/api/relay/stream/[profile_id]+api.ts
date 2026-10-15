@@ -1,12 +1,15 @@
 // Generated from expo-hermes; edit the private source, not this mirror.
+import { requireApiKey } from "@/lib/auth";
 import { config } from "dotenv";
 import Redis from "ioredis";
-import { requireApiKey } from "@/lib/auth";
 
 config({ override: true });
 
 export async function GET(request: Request): Promise<Response> {
-  const profile_id = new URL(request.url).pathname.split("/").at(-1)!;
+  const pathname = new URL(request.url).pathname;
+  const profile_id = pathname.substring(pathname.lastIndexOf("/") + 1);
+  const redisUrl = process.env.REDIS_URL;
+  if (!redisUrl) return Response.json({ error: "service_unavailable" }, { status: 503 });
 
   const authErr = await requireApiKey(request, profile_id);
   if (authErr) return authErr;
@@ -15,7 +18,7 @@ export async function GET(request: Request): Promise<Response> {
 
   const stream = new ReadableStream({
     start(controller) {
-      const sub = new Redis(process.env.REDIS_URL!);
+      const sub = new Redis(redisUrl);
       // See server/http.ts — an unhandled ioredis "error" event crashes the process.
       sub.on("error", (err) => console.error("[relay-stream] redis error:", err));
 

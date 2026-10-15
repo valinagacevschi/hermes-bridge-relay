@@ -1,8 +1,8 @@
 // Generated from expo-hermes; edit the private source, not this mirror.
-import { type IncomingMessage, type ServerResponse, createServer } from "http";
-import { createRequire } from "module";
-import { dirname, join } from "path";
-import { fileURLToPath } from "url";
+import { type IncomingMessage, type ServerResponse, createServer } from "node:http";
+import { createRequire } from "node:module";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { config } from "dotenv";
 
 import Redis from "ioredis";
@@ -23,8 +23,13 @@ const require = createRequire(import.meta.url);
 const { createRequestHandler } = require("expo-server/adapter/http");
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const REDIS_URL = process.env.REDIS_URL!;
-const pool = new Pool({ connectionString: process.env.DATABASE_URL! });
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) throw new Error(`${name} is required`);
+  return value;
+}
+const REDIS_URL = requiredEnv("REDIS_URL");
+const pool = new Pool({ connectionString: requiredEnv("DATABASE_URL") });
 // See lib/db.ts — an unhandled pg.Pool "error" event is fatal to the process.
 pool.on("error", (err) => console.error("[relay-http] pg pool error:", err));
 
@@ -33,7 +38,7 @@ const handler = createRequestHandler({
 });
 
 async function authorizeApiKey(req: IncomingMessage, profile_id: string): Promise<boolean> {
-  const auth = req.headers["authorization"] ?? "";
+  const auth = req.headers.authorization ?? "";
   if (!auth.startsWith("Bearer hb_")) return false;
   const key = auth.slice("Bearer ".length);
   const { rows } = await pool.query("SELECT 1 FROM api_keys WHERE key = $1 AND profile_id = $2", [
@@ -47,7 +52,7 @@ async function authorizeApiKey(req: IncomingMessage, profile_id: string): Promis
 // so SSE streams (which never close) produce zero bytes through nginx.
 // Handle SSE paths directly in Node.js to stream immediately.
 async function handleSSE(req: IncomingMessage, res: ServerResponse) {
-  const m = req.url!.match(/^\/api\/relay\/stream\/([^/?]+)/);
+  const m = req.url?.match(/^\/api\/relay\/stream\/([^/?]+)/);
   if (!m) {
     res.writeHead(400);
     res.end();
