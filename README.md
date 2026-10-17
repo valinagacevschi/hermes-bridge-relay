@@ -7,6 +7,8 @@ private `expo-hermes` source repository. Each export replaces the public tree;
 review removals and additions through sync pull requests. Edit the private
 source, not generated files here.
 
+The `expo-asset` override keeps the web export compatible with `react-native-web`; update it to match the version in the app's `bun.lock`.
+
 ## What is included
 
 The distribution contains the Expo Router API handlers, a Node HTTP adapter
