@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": false,
   "description": "Standalone Hermes Bridge relay HTTP, WebSocket, and push worker",
+  "overrides": {
+    "expo-asset": "58.0.13"
+  },
   "main": "expo-router/entry",
   "scripts": {
     "test": "vitest run",
