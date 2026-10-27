@@ -7,7 +7,9 @@ COPY package.json ./
 # npm install, not the Bun lockfile: Bun segfaults on these no-AVX runners.
 # react-native-web and uniwind are pinned in package.json. 0.21.3 re-exports
 # InputAccessoryView, and uniwind 1.12 redirects that to a web file it does
-# not publish, so `expo export --platform web` fails.
+# not publish, so `expo export --platform web` fails. expo-asset is pinned
+# to 58.0.13: 58.0.16+ imports AssetRegistry from react-native, which
+# react-native-web 0.21.2 does not export, so the web export fails.
 RUN npm install --legacy-peer-deps
 
 COPY . .
