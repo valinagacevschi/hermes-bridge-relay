@@ -14,8 +14,7 @@ config({ override: true });
 // Upper bound the relay holds a synchronous RPC POST open waiting for the
 // gateway's reply. Comfortably above a slow Hermes call (~600ms) yet short
 // enough that a truly offline gateway surfaces as an error, not a hang.
-// Laptop handlers with their own bound must answer inside it (kanban.op:
-// kanban_op_exec.DEFAULT_EXECUTOR_TIMEOUT_S, checked by test_kanban_op_exec).
+// Laptop handlers with their own bound must answer inside it.
 const RPC_REPLY_TIMEOUT_MS = 12_000;
 
 export async function POST(request: Request): Promise<Response> {
